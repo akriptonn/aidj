@@ -1,8 +1,10 @@
 from .models import Models
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.preprocessing import MinMaxScaler
 import sys
 sys.path.append(".")
 from utils import preprocessor
+from utils import saver
 
 class KNN(Models):
     # def __init__(self, num_neighbor):
@@ -13,14 +15,15 @@ class KNN(Models):
         self.seted = False
         self.minim = "-"
         self.ds = "-"
+        self.scaler = MinMaxScaler()
 
     def train(self, train_x, train_y):
-        (tr_x, self.minim) = preprocessor.preprocess(train_x)
-        # print(tr_x)
+        self.scaler.fit(train_x)
+        tr_x = preprocessor.preprocess(train_x,self.scaler)
         self.model.fit(tr_x, train_y)
 
     def infer(self, train_x):
-        (tr_x, self.minim) = preprocessor.preprocess(train_x)
+        tr_x = preprocessor.preprocess(train_x, self.scaler)
         # print(tr_x)
         return self.model.predict(tr_x)
     
@@ -34,7 +37,3 @@ class KNN(Models):
         self.seted = obj.seted
         self.minim = obj.minim
         self.ds = obj.ds
-
-    
-    # def __init__(self):
-    #     super(KNN, self).__init__("null", "null")
