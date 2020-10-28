@@ -1,8 +1,9 @@
 import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'utils'))
-import saver
-import prototype
+from utils import prototype
+from utils import saver
+
 #abstract class
 class Models:
     def __init__(self, model, files):
