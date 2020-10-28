@@ -29,17 +29,30 @@ x_train_rd = pca.transform(x_train)
 #Training Model
 from core import KNN
 
-for neigh in range(20):
-    knn = KNN.KNN(num_neighbor = neigh+1)
-    # print(x_train)
-    knn.train(x_train_rd, y_train)
+#loop for best neighbor
+# for neigh in range(20):
+#     knn = KNN.KNN(num_neighbor = neigh+1)
+#     # print(x_train)
+#     knn.train(x_train_rd, y_train)
 
-    #yield acc
-    y_pred = knn.infer(pca.transform(x_test))
+#     #yield acc
+#     y_pred = knn.infer(pca.transform(x_test))
+#     # print(y_pred.T[0])
+#     # print(loss.hamming_score(y_test, y_pred))
+#     print(accuracy_score(y_test.T[0], y_pred.T[0]))
+#     # print(accuracy_score(y_test.T[0], y_pred.T[0]) * accuracy_score(y_test.T[1], y_pred.T[1])) #ALL must TRUE metrics
+#     # print()
+
+#use best neighbor to train (only for class classifier)
+knn = KNN.KNN(num_neighbor = 3)
+    # print(x_train)
+knn.train(x_train_rd, y_train.T[0])
+y_pred = knn.infer(pca.transform(x_test))
     # print(y_pred.T[0])
     # print(loss.hamming_score(y_test, y_pred))
-    print(accuracy_score(y_test.T[0], y_pred.T[0]) * accuracy_score(y_test.T[1], y_pred.T[1])) #ALL must TRUE metrics
-    # print()
+print(accuracy_score(y_test.T[0], y_pred))
+
+
 
 
 
