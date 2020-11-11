@@ -10,8 +10,8 @@ class KNN(Models):
     # def __init__(self, num_neighbor):
     #     super(KNN, self).__init__(KNeighborsClassifier(n_neighbors=num_neighbor), )
 
-    def __init__(self, num_neighbor = "null", files = "cache/KNN.bin"):
-        super(KNN, self).__init__(KNeighborsClassifier(n_neighbors=num_neighbor), files)
+    def __init__(self, num_neighbor = "null", files = "cache/KNN.bin", weights = 'uniform'):
+        super(KNN, self).__init__(KNeighborsClassifier(n_neighbors=num_neighbor, weights = weights), files)
         self.seted = False
         self.minim = "-"
         self.ds = "-"
@@ -37,3 +37,5 @@ class KNN(Models):
         self.seted = obj.seted
         self.minim = obj.minim
         self.ds = obj.ds
+
+print("reloaded")
