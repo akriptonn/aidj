@@ -1,4 +1,4 @@
 {
     "python.pythonPath": "/home/kripton/anaconda3/envs/aidj/bin/python",
-    "python.dataScience.jupyterServerURI": "local"
+    "jupyter.jupyterServerType": "local"
 }
