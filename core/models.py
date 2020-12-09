@@ -1,8 +1,8 @@
 import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'utils'))
-from utils import prototype
-from utils import saver
+# from utils import prototype
+# from utils import saver
 
 #abstract class
 class Models:
@@ -32,13 +32,15 @@ class Models:
         raise NotImplementedError("Please Implement this method")
 
     def save(self):
-        saver.saveModel(self.model, self.files)
+        # saver.saveModel(self.model, self.files)
+        raise NotImplementedError("Please Implement this method")
 
     def load(self):
-        self.model = saver.loadModel(self.files)
+        # self.model = saver.loadModel(self.files)
+        raise NotImplementedError("Please Implement this method")
 
-def testRun():
-    print (prototype.compute_error())
+# def testRun():
+#     print (prototype.compute_error())
 
 if __name__ == "__main__":
     testRun()

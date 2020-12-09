@@ -38,4 +38,3 @@ class KNN(Models):
         self.minim = obj.minim
         self.ds = obj.ds
 
-print("reloaded")
