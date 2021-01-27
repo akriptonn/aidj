@@ -1,0 +1,40 @@
+{
+    "model_settings": [
+     {
+         "name": "genre",
+         "dir": "../model/genre_model"
+     },
+     {
+        "name": "key",
+        "dir": "../models/key_model"
+     }
+    ],
+    "genre_models" : [
+        {
+            "name": "genre",
+            "dir": "../models"
+        },
+        {
+           "name": "key",
+           "dir": "../models"
+        }
+    ],
+    "key_models" : [
+        {
+            "id": "0",
+            "name": "../models"
+        },
+        {
+           "name": "key",
+           "dir": "../models"
+        }
+    ],
+    "variation" : [
+        {
+            "name": "genre"
+        },
+        {
+           "name": "key"
+        }
+       ]
+}
