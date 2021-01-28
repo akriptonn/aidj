@@ -1,6 +1,8 @@
 import json
 from util import fileParser
-import core
+from core import SkeletonModel
+from core import MusicLoader
+from core import PostProcessor
 
 class MusicSelectionSystem:
     def __init__(self, config_file, songs_path): #config file should contain settings file for genre and key model
@@ -13,15 +15,21 @@ class MusicSelectionSystem:
 
         #Reconstruct model
         t_g, t_k = fileParser.single_parse_models_settings_json(self.settings)
-        self.genreModel= core.SkeletonModel.FileModel(t_g)
-        self.keyModel = core.SkeletonModel.FileModel(t_k)
+        self.genreModel= SkeletonModel.FileModel(t_g)
+        self.keyModel = SkeletonModel.FileModel(t_k)
+        self.mLoader = MusicLoader.MusicLoader(30)
+        t_d = self.mLoader.retrieveDataset(songs_path)
+        t_l_g = fileParser.parse_args_json(self.settings, {'genre_models': {"iterator":"id", "feature":'name'}})
+        t_l_k = fileParser.parse_args_json(self.settings, {'key_models': {"iterator":"id", "feature":'name'}})
+        self.postProcessorG = PostProcessor.PostProcessor(t_l_g)
+        self.postProcessorK = PostProcessor.PostProcessor(t_l_k)
         self.CONST_MAP = ('Genre', 'Key')
-        self.database_variable = core.DatabaseLocal.DatabaseLocal(self.CONST_MAP, )
+        # self.database_variable = core.DatabaseLocal.DatabaseLocal(self.CONST_MAP, )
 
-    def getNextMusic(self, ):
+    # def getNextMusic(self, ):
 
 
-    def getNextMusicAbsPath(self, currDir):
+    # def getNextMusicAbsPath(self, currDir):
 
     
     

@@ -11,22 +11,50 @@
     ],
     "genre_models" : [
         {
-            "name": "genre",
-            "dir": "../models"
+            "id": "0",
+            "name": "BASS HOUSE"
         },
         {
-           "name": "key",
-           "dir": "../models"
+            "id": "1",
+            "name": "BIG ROOM"
+        },
+        {
+            "id": "2",
+            "name": "DEEP HOUSE"
+        },
+        {
+            "id": "3",
+            "name": "ELECTRO HOUSE"
+        },
+        {
+            "id": "4",
+            "name": "FUTURE HOUSE"
         }
     ],
     "key_models" : [
         {
             "id": "0",
-            "name": "../models"
+            "name": "1A"
         },
         {
-           "name": "key",
-           "dir": "../models"
+            "id": "1",
+            "name": "2A"
+        },
+        {
+            "id": "2",
+            "name": "3A"
+        },
+        {
+            "id": "3",
+            "name": "4A"
+        },
+        {
+            "id": "4",
+            "name": "5A"
+        },
+        {
+            "id": "5",
+            "name": "6A"
         }
     ],
     "variation" : [
