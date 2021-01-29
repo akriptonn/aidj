@@ -43,7 +43,7 @@ class MusicLoader:
                         file_path = os.path.join(dirpath,f)
                         signal, dumps = 0, 0
                         if (sf_mode):
-                            signal, dumps = sf.load(file_path)
+                            signal, dumps = sf.read(file_path)
                         else:
                             signal, dumps = librosa.load(file_path)
                         for s in range(num_segments): 
