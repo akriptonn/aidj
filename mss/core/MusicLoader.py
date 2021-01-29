@@ -29,7 +29,7 @@ class MusicLoader:
         }
         for i, (dirpath, dirnames, filenames) in enumerate(os.walk(songs_path)):
         #ensure that we're not at the root level
-            if ((dirpath not in dataset_path) or (not ignore_main_path)):
+            if ((dirpath not in songs_path) or (not ignore_main_path)):
 
                 #save the semantic label
                 dirpath_components = dirpath.split('/')
