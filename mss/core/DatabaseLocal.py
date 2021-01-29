@@ -6,7 +6,7 @@ class DatabaseLocal:
         self.CONST_MAP = column
         for index in range(len(column)):
             self.mainArr.append(wList[index])
-        self.oriArr = copy.deepcopy(self.mainArr)
+        self.__oriArr = copy.deepcopy(self.mainArr)
 
     def pop(self, val):
         resets = False
@@ -19,7 +19,7 @@ class DatabaseLocal:
                 pass
 
         if resets:
-            self.mainArr = copy.deepcopy(self.oriArr) 
+            self.mainArr = copy.deepcopy(self.__oriArr) 
 
     def getList(self):
         return self.mainArr
