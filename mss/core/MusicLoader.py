@@ -1,5 +1,6 @@
 import os
 import librosa
+import math
 sf_mode = True
 try:
     import soundfile as sf
@@ -10,7 +11,7 @@ class MusicLoader:
     def __init__(self, duration,sr=22050, num_segments=10, n_mfcc=13, n_fft=4084, hop_length=1024):
         self.SAMPLES_PER_TRACK = sr*duration
         self.num_samples_per_segment = int(self.SAMPLES_PER_TRACK / num_segments) 
-        self.expected_num_mfcc_vectors_per_segment = math.ceil(num_samples_per_segment / hop_length)
+        self.expected_num_mfcc_vectors_per_segment = math.ceil(self.num_samples_per_segment / hop_length)
         self.num_segments = num_segments
         self.n_mfcc = n_mfcc
         self.n_fft = n_fft
