@@ -46,9 +46,9 @@ class MusicLoader:
                             signal, dumps = sf.read(file_path)
                         else:
                             signal, dumps = librosa.load(file_path)
-                        for s in range(num_segments): 
-                            start_sample = num_samples_per_segment * s   
-                            finish_sample = num_samples_per_segment + start_sample
+                        for s in range(self.num_segments): 
+                            start_sample = self.num_samples_per_segment * s   
+                            finish_sample = self.num_samples_per_segment + start_sample
                             
                             mfcc = librosa.feature.mfcc(signal[start_sample : finish_sample],
                                                     sr = self.sr,
@@ -58,7 +58,7 @@ class MusicLoader:
 
                             mfcc = mfcc.T
                             # store mfcc for segment if it has the expected length
-                            if len(mfcc) == expected_num_mfcc_vectors_per_segment:
+                            if len(mfcc) == self.expected_num_mfcc_vectors_per_segment:
                                 print(mfcc.shape)
                                 data['mfcc'].append(mfcc.tolist())
                                 data['songs_dir'].append(file_path)

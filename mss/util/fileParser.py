@@ -1,3 +1,4 @@
+import json
 ##extracted_features -> {
 ##	"labels": {"iterator":id, "feature":['name', 'pass']} //format to extract from json
 ##}
@@ -10,7 +11,7 @@ def __parse_args_json__(r, extracted_features):
         if (isinstance(extracted_features[kunci]["feature"], list)):
             looper = extracted_features[kunci]["feature"]
         else:
-            looper = extracted_features[kunci]["feature"]
+            looper = [extracted_features[kunci]["feature"]]
         for obj in r[kunci]:
             t_dic = {}
             idx = 0
@@ -24,9 +25,9 @@ def __parse_args_json__(r, extracted_features):
                 data[kunci].append("")
                 idx = len(data[kunci])-1 
             else:
-                while (len(data[kunci])-1<int(obj[extracted_features['labels']['iterator']])):
+                while (len(data[kunci])-1<int(obj[extracted_features[kunci]['iterator']])):
                     data[kunci].append("")
-                idx = int(obj[extracted_features['labels']['iterator']])
+                idx = int(obj[extracted_features[kunci]['iterator']])
             data[kunci][idx] = t_dic  
     return data
 
