@@ -30,7 +30,8 @@ class PostProcessor:
                     t_arr.append(t__arr)
             # print (outp[t_cnt])
             # print (t__arr)
-            t_arr[t_cnt_arr][outp[t_cnt]] += 1
+            print(len(t_arr), t_cnt_arr)
+            t_arr[t_cnt_arr-1][outp[t_cnt]] += 1
             t_cnt +=1
         
         for idx in range(len(t_arr)):
