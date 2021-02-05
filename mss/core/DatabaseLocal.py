@@ -5,9 +5,18 @@ class DatabaseLocal:
         self.mainArr = []
         self.CONST_MAP = column
 
-        self.ref_song_list = [idx for idx in wList[0]]
+        self.ref_song_list = []
+        for song in wList[0]:
+            self.ref_song_list.extend(song)
+        print(self.ref_song_list)
         for index in range(len(column)):
-            self.mainArr.append([self.ref_song_list.index(isi) for isi in wList[index]])
+            all_genre = []
+            for sub_album in wList[index]:
+                curr_genre = []
+                for song in sub_album:
+                    curr_genre.append(self.ref_song_list.index(song))
+                all_genre.append(curr_genre)
+            self.mainArr.append(all_genre)
         self.__oriArr = copy.deepcopy(self.mainArr)
 
     def pop(self, val):
@@ -37,3 +46,10 @@ class DatabaseLocal:
     def forceFlush(self):
         self.mainArr = copy.deepcopy(self.__oriArr) 
     
+    def popVal(self, indexes,column=0, locSong=0):
+        t = self.mainArr[column][indexes][locSong] #default: retrieve first value found
+        self.pop(t)
+        return t
+    
+    def __translate_name__ (self, idx):
+        return self.ref_song_list[idx]

@@ -70,19 +70,23 @@ class MusicSelectionSystem:
         #store song to database
         CONST_MAP = ('Genre', 'Key')
         self.Database = DatabaseLocal.DatabaseLocal(CONST_MAP,[arr1,arr2])
-        
+        self.MUSTFLUSH = False
+        self.ovr = 0
         # self.database_variable = core.DatabaseLocal.DatabaseLocal(self.CONST_MAP, )
 
-    def getNextMusic(self, crowd = 1, ignore_empty = True):
+    def getNextMusic(self, crowd = 1, ignore_empty = False, care_key=False):
         #HardCoding Mapping
         #1 -> Up, 2-> Down, 3-> Key, 4->Not doing anything
-        if (len(self.Database.mainArr[self.ptr2][self.ptr[self.ptr2]])<1):
+        if (len(self.Database.mainArr[self.ptr2][self.ptr[self.ptr2]])<1) or (self.MUSTFLUSH):
             print("flushed")
+            self.MUSTFLUSH = False
             self.ptr = [self.legals[0][randint(0, len(self.legals[0])-1)],0]
             self.ptr2 = 0
             self.Database.forceFlush()
-        t = self.Database.mainArr[self.ptr2][self.ptr[self.ptr2]][0]
-        self.Database.pop(t)
+        # t = self.Database.mainArr[self.ptr2][self.ptr[self.ptr2]][0]
+        # self.Database.pop(t)
+        t = self.Database.popVal(indexes = self.ptr[self.ptr2], column = self.ptr2, locSong=self.ovr)
+        self.ovr = 0
         if (crowd==1):
             self.ptr2 = 0
             if (ignore_empty):
@@ -101,10 +105,37 @@ class MusicSelectionSystem:
                 temp = len(self.legals[self.ptr2])-1
             if (self.ptr[self.ptr2]<0):
                 self.ptr[self.ptr2] = temp
-        return t
+        elif (crowd==3):
+            self.ptr2 = 1
+            possKey = self.__generate_key__( self.__retrieve_key__(t))
+            self.MUSTFLUSH = True
+            for isi in possKey:
+                if (len(self.Database.mainArr[self.ptr2][isi])>0):
+                    self.ptr[self.ptr2] = isi
+                    self.MUSTFLUSH = False
+                    break
+        if ( (care_key) and ( (crowd==1) or (crowd==2) ) ):
+            possKey = self.__generate_key__( self.__retrieve_key__(t))
+            self.MUSTFLUSH = True
+            song_list = self.Database.mainArr[self.ptr2][self.ptr[self.ptr2]]
+            for isi in enumerate(song_list):
+                pc = self.__retrieve_key__(isi[1])
+                if (pc in possKey):
+                    self.ptr2 = 1
+                    self.ptr[self.ptr2] = pc
+                    self.MUSTFLUSH = False
+                    self.ovr = isi[0]
+                    break
+        return self.Database.__translate_name__(t)
 
-    def __retrieve_key__(self):
-        return 
+    def __retrieve_key__(self, song):
+        arrKey = self.Database.getFreshList()[self.Database.CONST_MAP.index('Key')]
+        index_songs = -1
+        for index in range(len(arrKey)):
+            if (song in arrKey[index]):
+                index_songs = index
+                break
+        return index_songs
 
     def __generate_key__(self, currKey):
         pc = ((len(self.postProcessorK.label)-1)/2)
