@@ -2,11 +2,13 @@
     "model_settings": [
      {
          "name": "genre",
-         "dir": "../model/genre_model"
+         "dir": "model/genre_model",
+         "thresh": "0"
      },
      {
         "name": "key",
-        "dir": "../models/key_model"
+        "dir": "model/key_model",
+        "thresh": "0"
      }
     ],
     "genre_models" : [

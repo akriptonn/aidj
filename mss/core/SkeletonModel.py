@@ -15,8 +15,11 @@ class FileModel:
           batch_size=batch_size
         )
     
-    def predict(self, x):
+    def __predict__(self, x):
         return self.model.predict(x)
+
+    def predict (self, x):
+        return self.__predict__(x)
 
     def evaluate(self, x, y, batch_size=1):
         return self.model.evaluate(x, y, batch_size)

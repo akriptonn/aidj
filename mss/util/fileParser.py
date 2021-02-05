@@ -51,6 +51,6 @@ def file_read_json_direct(json_path, extracted_features):
 def parse_args_json(json_obj, extracted_features):
     return __parse_args_json__(json_obj, extracted_features)
 
-def single_parse_models_settings_json(json_obj): #(genre, key)
-    t_dic = parse_args_json(json_obj, {'model_settings': {"iterator":None, "feature":['name', 'dir']}})
-    return (t_dic['model_settings'][t_dic['model_settings'].index([isi for isi in t_dic['model_settings'] if isi['name']=='genre'][-1])]['dir'], t_dic['model_settings'][t_dic['model_settings'].index([isi for isi in t_dic['model_settings'] if isi['name']=='key'][-1])]['dir'])
+def single_parse_models_settings_json(json_obj, retrieved='dir'): #(genre, key)
+    t_dic = parse_args_json(json_obj, {'model_settings': {"iterator":None, "feature":['name', retrieved]}})
+    return (t_dic['model_settings'][t_dic['model_settings'].index([isi for isi in t_dic['model_settings'] if isi['name']=='genre'][-1])][retrieved], t_dic['model_settings'][t_dic['model_settings'].index([isi for isi in t_dic['model_settings'] if isi['name']=='key'][-1])][retrieved])
