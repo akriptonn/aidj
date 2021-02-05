@@ -5,12 +5,9 @@ class DatabaseLocal:
         self.mainArr = []
         self.CONST_MAP = column
 
-        self.ref_song_list = [isi for isi in wList[0]]
-
-        
-
+        self.ref_song_list = [idx for idx in wList[0]]
         for index in range(len(column)):
-            self.mainArr.append(wList[index])
+            self.mainArr.append([self.ref_song_list.index(isi) for isi in wList[index]])
         self.__oriArr = copy.deepcopy(self.mainArr)
 
     def pop(self, val):
