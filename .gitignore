@@ -2,3 +2,5 @@ dataset/
 .vscode/
 raw_dataset/
 pr_dataset/
+__pycache__/
+*.pyc
