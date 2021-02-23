@@ -1,7 +1,8 @@
 {
     "preshader_settings":{ 
         "mode": "True",
-        "dir": "tmp/preshadered.bin"
+        "dir": "tmp/preshadered.bin",
+        "saveAtInit": "True"
     },
     "model_settings": [
      {
