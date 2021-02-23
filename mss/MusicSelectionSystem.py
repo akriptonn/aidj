@@ -155,7 +155,52 @@ class MusicSelectionSystem:
         
         return (int(t1), int(t2), int(t3))
 
-    
+    def addSong(self, nwsong):
+        t_d = self.mLoader.retrieveDataset(nwsong, ignore_main_path=False)
+
+        #save array containing possible output for each model
+        t_l_g = fileParser.parse_args_json(self.settings, {'genre_models': {"iterator":"id", "feature":'name'}})['genre_models']
+        t_l_k = fileParser.parse_args_json(self.settings, {'key_models': {"iterator":"id", "feature":'name'}})['key_models']
+
+        #inference
+        w_g = self.genreModel.predict(t_d['mfcc'])
+        w_k = self.keyModel.predict(t_d['mfcc'])
+
+        #postprocess and replace previous inference data
+        i_g, w_g = self.postProcessorG.process(t_d['songs_dir'], w_g)
+        i_k, w_k = self.postProcessorK.process(t_d['songs_dir'], w_k)
+
+        #prepare array for all class to be stored
+        arr1 = []
+        arr2 = []
+
+        for isi in t_l_g:
+            arr1.append([])
+        for isi in t_l_k:
+            arr2.append([])
+
+        #store to corresponding list
+        print(w_g)
+        print(i_g)
+
+        #### Need to find ways to solve this!!
+        # self.legals = [[isi for isi in list(set(w_g)) if isi != len(t_l_g)-1], [isi for isi in list(set(w_k)) if isi != len(t_l_k)-1] ] #legal path
+        # self.ptr = [self.legals[0][randint(0, len(self.legals[0])-1)],0]
+        # self.ptr2 = 0
+        
+        for isi in enumerate(w_g):
+            print(isi)
+            arr1[isi[1]].append(i_g[isi[0]])
+        #store to corresponding list
+        for isi in enumerate(w_k):
+            arr2[isi[1]].append(i_k[isi[0]])
+
+        #store song to database
+        self.Database.pushVal([arr1, arr2])
+
+    def preShader(self):
+        dirc = fileParser.parse_args_json(self.settings, {'preshader_settings': {"iterator":None, "feature":["mode", "dir"]}})['preshader_settings']
+        
             
             
 

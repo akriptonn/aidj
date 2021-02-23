@@ -53,3 +53,22 @@ class DatabaseLocal:
     
     def __translate_name__ (self, idx):
         return self.ref_song_list[idx]
+
+    def pushVal(self, wList):
+        # self.mainArr = []
+        # self.CONST_MAP = column
+
+        # self.ref_song_list = []
+        for song in wList[0]:
+            self.ref_song_list.extend(song)
+        print(self.ref_song_list)
+        for index in range(len(self.CONST_MAP)):
+            # all_genre = []
+            for idx in range(len(wList[index])):
+                # curr_genre = []
+                for song in (wList[index][idx]):
+                    self.mainArr[index][idx].extend(self.ref_song_list.index(song))
+                    self.__oriArr[index][idx].extend(self.ref_song_list.index(song))
+                # all_genre.append(curr_genre)
+            # self.mainArr.extend(all_genre)
+        # self.__oriArr.extend(all_genre)

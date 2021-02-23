@@ -16,6 +16,8 @@ class FileModel:
         )
     
     def __predict__(self, x):
+        if (len(x)<=1):
+            return self.model(x)
         return self.model.predict(x)
 
     def predict (self, x):

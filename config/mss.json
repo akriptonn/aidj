@@ -1,4 +1,8 @@
 {
+    "preshader_settings":{ 
+        "mode": "True",
+        "dir": "tmp/preshadered.bin"
+    },
     "model_settings": [
      {
          "name": "genre",
