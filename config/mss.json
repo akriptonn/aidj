@@ -37,99 +37,99 @@
     "key_models" : [
         {
             "id": "0",
-            "name": "1A"
+            "name": "A-Flat Minor"
         },
         {
             "id": "1",
-            "name": "2A"
+            "name": "E-Flat Minor"
         },
         {
             "id": "2",
-            "name": "3A"
+            "name": "B-Flat Minor"
         },
         {
             "id": "3",
-            "name": "4A"
+            "name": "F Minor"
         },
         {
             "id": "4",
-            "name": "5A"
+            "name": "C Minor"
         },
         {
             "id": "5",
-            "name": "6A"
+            "name": "G Minor"
         },
         {
             "id": "6",
-            "name": "7A"
+            "name": "D Minor"
         },
         {
             "id": "7",
-            "name": "8A"
+            "name": "A Minor"
         },
         {
             "id": "8",
-            "name": "9A"
+            "name": "E Minor"
         },
         {
             "id": "9",
-            "name": "10A"
+            "name": "B Minor"
         },
         {
             "id": "10",
-            "name": "11A"
+            "name": "F-Sharp Minor"
         },
         {
             "id": "11",
-            "name": "12A"
+            "name": "D-Flat Minor"
         },
         {
             "id": "12",
-            "name": "1B"
+            "name": "B Major"
         },
         {
             "id": "13",
-            "name": "2B"
+            "name": "F-Sharp Major"
         },
         {
             "id": "14",
-            "name": "3B"
+            "name": "D-Flat Major"
         },
         {
             "id": "15",
-            "name": "4B"
+            "name": "A-Flat Major"
         },
         {
             "id": "16",
-            "name": "5B"
+            "name": "E-Flat Major"
         },
         {
             "id": "17",
-            "name": "6B"
+            "name": "B-Flat Major"
         },
         {
             "id": "18",
-            "name": "7B"
+            "name": "F Major"
         },
         {
             "id": "19",
-            "name": "8B"
+            "name": "C Major"
         },
         {
             "id": "20",
-            "name": "9B"
+            "name": "G Major"
         },
         {
             "id": "21",
-            "name": "10B"
+            "name": "D Major"
         },
         {
             "id": "22",
-            "name": "11B"
+            "name": "A Major"
         },
         {
             "id": "23",
-            "name": "12B"
+            "name": "E Major"
         }
     ],
     "variation" : [
