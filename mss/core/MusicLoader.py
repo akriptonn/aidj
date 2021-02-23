@@ -27,6 +27,32 @@ class MusicLoader:
             # 'energy': [],
             # 'key': []
         }
+
+        if (os.path.isfile(songs_path)):
+            if f.lower().endswith(format):
+                file_path = os.path.join(dirpath,f)
+                signal, dumps = 0, 0
+                if (sf_mode):
+                    signal, dumps = sf.read(file_path)
+                else:
+                    signal, dumps = librosa.load(file_path)
+                for s in range(self.num_segments): 
+                    start_sample = self.num_samples_per_segment * s   
+                    finish_sample = self.num_samples_per_segment + start_sample
+                            
+                    mfcc = librosa.feature.mfcc(signal[start_sample : finish_sample],
+                                                    sr = self.sr,
+                                                    n_fft = self.n_fft,
+                                                    n_mfcc = self.n_mfcc,
+                                                    hop_length = self.hop_length)
+
+                    mfcc = mfcc.T
+                    # store mfcc for segment if it has the expected length
+                    if len(mfcc) == self.expected_num_mfcc_vectors_per_segment:
+                        print(mfcc.shape)
+                        data['mfcc'].append(mfcc.tolist())
+                        data['songs_dir'].append(file_path)
+
         for i, (dirpath, dirnames, filenames) in enumerate(os.walk(songs_path)):
         #ensure that we're not at the root level
             if ((dirpath not in songs_path) or (not ignore_main_path)):
