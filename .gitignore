@@ -1,6 +1,8 @@
 dataset/
-.vscode/
 raw_dataset/
 pr_dataset/
 __pycache__/
+tmp/
+sample/.ipynb_checkpoints/
 *.pyc
+.ipynb_checkpoints/

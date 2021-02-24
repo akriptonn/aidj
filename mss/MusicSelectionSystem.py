@@ -1,5 +1,5 @@
 import json
-from .util import fileParser
+from .util import fileParser, ExportCache
 from .core import SkeletonModel
 from .core import MusicLoader
 from .core import PostProcessor
@@ -13,7 +13,7 @@ class MusicSelectionSystem:
             with open(config_file) as f:
                 self.settings = json.load(f)
         else:
-            raise FileNotFoundError("File must JSON, instead "+json_path+" passed")
+            raise FileNotFoundError("File must JSON, instead "+config_file+" passed")
 
         #Reconstruct model
         t_g, t_k = fileParser.single_parse_models_settings_json(self.settings)
@@ -23,20 +23,22 @@ class MusicSelectionSystem:
         #instantiate loader to load music
         self.mLoader = MusicLoader.MusicLoader(30)
         try:
-            dirc = fileParser.parse_args_json(self.settings, {'preshader_settings': {"iterator":None, "feature":["mode", "dir", "saveAtInit"]}})['preshader_settings']
+            dirc = fileParser.parse_args_json(self.settings, {'precache_settings': {"iterator":None, "feature":["mode", "dir", "saveAtInit"]}})['precache_settings']
+            dirc = dirc[-1]
         except:
             dirc = {
                 'mode' : "False",
                 'dir' : "EMpty",
                 'saveAtInit': "False"
             }
-            print("Failed to read JSON")
+            print("Failed to read JSON settings")
         #save data for music in temporary
-        if (dirc["mode"]==True):
+        if (dirc["mode"]=="True"):
             try:
-                t_d = self.preShader(dirc)
+                t_d = self.preShader(dirc, songs_path)
             except:
                 t_d = self.mLoader.retrieveDataset(songs_path, ignore_main_path=False)
+                self.saveShader(t_d, dirc)
         #assume songs path related with shader, so if already load, no need to check again
         else:
             t_d = self.mLoader.retrieveDataset(songs_path, ignore_main_path=False)
@@ -215,33 +217,38 @@ class MusicSelectionSystem:
         #store song to database
         self.Database.pushVal([arr1, arr2])
         try:
-            dirc = fileParser.parse_args_json(self.settings, {'preshader_settings': {"iterator":None, "feature":["mode", "dir"]}})['preshader_settings']
-            self.saveShader(t_d, dirc)
+            dirc = fileParser.parse_args_json(self.settings, {'precache_settings': {"iterator":None, "feature":["mode", "dir"]}})['precache_settings']
+            dirc = dirc[-1]
+            # self.saveShader(t_d, dirc)
         except:
             pass
 
-    def preShader(self, dirc):
+    def preShader(self, dirc, songs_path):
         # dirc = fileParser.parse_args_json(self.settings, {'preshader_settings': {"iterator":None, "feature":["mode", "dir"]}})['preshader_settings']
         if (dirc["mode"]!="True"):
             return False
-        with open(dirc["dir"], 'r') as fp:
-            data = json.load(fp)
+        data, unloaded = ExportCache.loadCache(dirc['dir'],songs_path)
+        for song in unloaded:
+            t_d = self.mLoader.retrieveDataset(song, ignore_main_path=False)
+            data['mfcc'].extend(t_d['mfcc'])
+            data['songs_dir'].extend(t_d['songs_dir'])
         return data
 
     def saveShader(self, nwdata, dirc):
         # dirc = fileParser.parse_args_json(self.settings, {'preshader_settings': {"iterator":None, "feature":["mode", "dir"]}})['preshader_settings']
-        if (True):
-            try:
-                with open(dirc["dir"], 'r') as fp:
-                    data = json.load(fp)
-                    data['mfcc'].extend(nwdata['mfcc'])
-                    data['songs_dir'].extend(nwdata['songs_dir'])
-                    data['mapping'].extend(nwdata['mapping'])
-            except:
-                data = nwdata
+        self.saveShaderManual(dirc['dir'], nwdata)
+        # if (True):
+        #     try:
+        #         with open(dirc["dir"], 'r') as fp:
+        #             data = json.load(fp)
+        #             data['mfcc'].extend(nwdata['mfcc'])
+        #             data['songs_dir'].extend(nwdata['songs_dir'])
+        #             data['mapping'].extend(nwdata['mapping'])
+        #     except:
+        #         data = nwdata
 
-            with open(dirc["dir"], 'w') as fp:
-                json.dump(data, fp, indent=4)
+        #     with open(dirc["dir"], 'w') as fp:
+        #         json.dump(data, fp, indent=4)
             
     def saveShaderManual(self, dirc, nwdata):
         # dirc = fileParser.parse_args_json(self.settings, {'preshader_settings': {"iterator":None, "feature":["mode", "dir"]}})['preshader_settings']
@@ -256,7 +263,11 @@ class MusicSelectionSystem:
                 data = nwdata
 
             with open(dirc, 'w') as fp:
-                json.dump(data, fp, indent=4)        
+                json.dump(data, fp, indent=4) 
+
+    def saveCache(self, dirc, nwdata):
+        self.saveShaderManual(dirc, nwdata)    
+           
 
 
     # def getNextMusicAbsPath(self, currDir):

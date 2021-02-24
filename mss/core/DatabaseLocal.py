@@ -67,8 +67,8 @@ class DatabaseLocal:
             for idx in range(len(wList[index])):
                 # curr_genre = []
                 for song in (wList[index][idx]):
-                    self.mainArr[index][idx].extend(self.ref_song_list.index(song))
-                    self.__oriArr[index][idx].extend(self.ref_song_list.index(song))
+                    self.mainArr[index][idx].extend([self.ref_song_list.index(song)])
+                    self.__oriArr[index][idx].extend([self.ref_song_list.index(song)])
                 # all_genre.append(curr_genre)
             # self.mainArr.extend(all_genre)
         # self.__oriArr.extend(all_genre)

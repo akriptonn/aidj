@@ -1,9 +1,9 @@
 {
-    "preshader_settings":{ 
+    "precache_settings":[{ 
         "mode": "True",
-        "dir": "tmp/preshadered.bin",
+        "dir": "tmp/test.bin",
         "saveAtInit": "True"
-    },
+    }],
     "model_settings": [
      {
          "name": "genre",

@@ -18,7 +18,7 @@ class MusicLoader:
         self.hop_length = hop_length
         self.sr = sr
     
-    def retrieveDataset(self, songs_path, ignore_main_path=True, format='.mp3'):
+    def retrieveDataset(self, songs_path, ignore_main_path=False, format='.mp3'):
         data = {
             'mapping' : [],
             'mfcc' : [],
@@ -29,24 +29,30 @@ class MusicLoader:
         }
 
         if (os.path.isfile(songs_path)):
-            if f.lower().endswith(format):
-                file_path = os.path.join(dirpath,f)
+            if songs_path.lower().endswith(format):
+                file_path = songs_path
                 signal, dumps = 0, 0
                 if (sf_mode):
                     signal, dumps = sf.read(file_path)
                 else:
-                    signal, dumps = librosa.load(file_path)
+                    try:
+                        signal, dumps = librosa.load(file_path)
+                    except:
+                        print("The "+ file_path + " songs has some problem, skipped")
+                        return -1 
                 for s in range(self.num_segments): 
                     start_sample = self.num_samples_per_segment * s   
                     finish_sample = self.num_samples_per_segment + start_sample
-                            
-                    mfcc = librosa.feature.mfcc(signal[start_sample : finish_sample],
-                                                    sr = self.sr,
-                                                    n_fft = self.n_fft,
-                                                    n_mfcc = self.n_mfcc,
-                                                    hop_length = self.hop_length)
+                    try:
+                        mfcc = librosa.feature.mfcc(signal[start_sample : finish_sample],
+                                                        sr = self.sr,
+                                                        n_fft = self.n_fft,
+                                                        n_mfcc = self.n_mfcc,
+                                                        hop_length = self.hop_length)
 
-                    mfcc = mfcc.T
+                        mfcc = mfcc.T
+                    except:
+                        continue
                     # store mfcc for segment if it has the expected length
                     if len(mfcc) == self.expected_num_mfcc_vectors_per_segment:
                         print(mfcc.shape)
@@ -68,21 +74,27 @@ class MusicLoader:
                     if f.lower().endswith(format):
                         file_path = os.path.join(dirpath,f)
                         signal, dumps = 0, 0
-                        if (sf_mode):
-                            signal, dumps = sf.read(file_path)
-                        else:
-                            signal, dumps = librosa.load(file_path)
+                        try:
+                            if (sf_mode):
+                                signal, dumps = sf.read(file_path)
+                            else:
+                                signal, dumps = librosa.load(file_path)
+                        except:
+                            print("The "+ file_path + " songs has some problem, skipped")
+                            continue
                         for s in range(self.num_segments): 
                             start_sample = self.num_samples_per_segment * s   
                             finish_sample = self.num_samples_per_segment + start_sample
-                            
-                            mfcc = librosa.feature.mfcc(signal[start_sample : finish_sample],
-                                                    sr = self.sr,
-                                                    n_fft = self.n_fft,
-                                                    n_mfcc = self.n_mfcc,
-                                                    hop_length = self.hop_length)
+                            try:
+                                mfcc = librosa.feature.mfcc(signal[start_sample : finish_sample],
+                                                        sr = self.sr,
+                                                        n_fft = self.n_fft,
+                                                        n_mfcc = self.n_mfcc,
+                                                        hop_length = self.hop_length)
 
-                            mfcc = mfcc.T
+                                mfcc = mfcc.T
+                            except:
+                                continue
                             # store mfcc for segment if it has the expected length
                             if len(mfcc) == self.expected_num_mfcc_vectors_per_segment:
                                 print(mfcc.shape)
