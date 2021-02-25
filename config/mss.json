@@ -1,7 +1,7 @@
 {
     "precache_settings":[{ 
         "mode": "True",
-        "dir": "tmp/test.bin",
+        "dir": "tmp/complete.bin",
         "saveAtInit": "True"
     }],
     "model_settings": [
