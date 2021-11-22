@@ -8,7 +8,6 @@ from random import randint
 
 class MusicSelectionSystem:
     def __init__(self, config_file, songs_path): #config file should contain settings file for genre and key model
-
         #Read JSON Settings
         if (config_file.split(".")[-1]=='json'): 
             with open(config_file) as f:
@@ -16,15 +15,13 @@ class MusicSelectionSystem:
         else:
             raise FileNotFoundError("File must JSON, instead "+config_file+" passed")
 
-        #Reconstruct model for Classifier part
+        #Reconstruct model
         t_g, t_k = fileParser.single_parse_models_settings_json(self.settings)
         self.genreModel= SkeletonModel.FileModel(t_g)
         self.keyModel = SkeletonModel.FileModel(t_k)
 
-        #instantiate loader to load music (song feature extraction part)
-        self.mLoader = MusicLoader.MusicLoader(30)  #define duration in second
-
-        #load feature from storage
+        #instantiate loader to load music
+        self.mLoader = MusicLoader.MusicLoader(30)
         try:
             dirc = fileParser.parse_args_json(self.settings, {'precache_settings': {"iterator":None, "feature":["mode", "dir", "saveAtInit"]}})['precache_settings']
             dirc = dirc[-1]
