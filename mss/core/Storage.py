@@ -1,4 +1,5 @@
 import json
+
 class Storage:
     def __init__(self, location, columns, saveEveryAdd = True):
         self.location = location
@@ -28,7 +29,10 @@ class Storage:
     def addData(self,data):
         for column, content in data.items():
             if column in self.data:
-                self.data[column].extend(content)
+                if (isinstance(content, list)):
+                    self.data[column].extend(content)
+                else:
+                    self.data[column].append(content)
         if (self.saveEveryAdd):
             self.saveData()
         

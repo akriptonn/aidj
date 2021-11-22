@@ -7,12 +7,17 @@
     "model_settings": [
      {
          "name": "genre",
-         "dir": "model/genre_model",
+         "dir": "../model/my_genre_model",
          "thresh": "0"
      },
      {
         "name": "key",
-        "dir": "model/key_model",
+        "dir": "../model/my_model_key",
+        "thresh": "0"
+     },
+     {
+        "name": "energy",
+        "dir": "../model/ENERGY_2",
         "thresh": "0"
      }
     ],
@@ -137,9 +142,34 @@
             "name": "E Major"
         }
     ],
+    "energy_models" : [
+        {
+            "id": "0",
+            "name": "Energy 5"
+        },
+        {
+            "id": "1",
+            "name": "Energy 6"
+        },
+        {
+            "id": "2",
+            "name": "Energy 7"
+        },
+        {
+            "id": "3",
+            "name": "Energy 8"
+        },
+        {
+            "id": "4",
+            "name": "Energy 9"
+        }
+    ],
     "variation" : [
         {
             "name": "genre"
+        },
+        {
+            "name": "energy"
         },
         {
            "name": "key"

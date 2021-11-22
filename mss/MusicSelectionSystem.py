@@ -5,6 +5,10 @@ from .core import MusicLoader
 from .core import PostProcessor
 from .core import DatabaseLocal
 from random import randint
+from .core.MusicSelection import MusicSelection
+from .core.MusicStorage import MusicStorage
+import os
+import numpy as np
 
 class MusicSelectionSystem:
     def __init__(self, config_file, songs_path): #config file should contain settings file for genre and key model
@@ -17,9 +21,9 @@ class MusicSelectionSystem:
             raise FileNotFoundError("File must JSON, instead "+config_file+" passed")
 
         #Reconstruct model for Classifier part
-        t_g, t_k = fileParser.single_parse_models_settings_json(self.settings)
-        self.genreModel= SkeletonModel.FileModel(t_g)
+        t_g, t_k, t_e = fileParser.single_parse_models_settings_json(self.settings)
         self.keyModel = SkeletonModel.FileModel(t_k)
+        self.energyModel = SkeletonModel.FileModel(t_e)
 
         #instantiate loader to load music (song feature extraction part)
         self.mLoader = MusicLoader.MusicLoader(30)  #define duration in second
@@ -35,245 +39,69 @@ class MusicSelectionSystem:
                 'saveAtInit': "False"
             }
             print("Failed to read JSON settings")
-        #save data for music in temporary
-        if (dirc["mode"]=="True"):
-            try:
-                t_d = self.preShader(dirc, songs_path)
-            except:
-                t_d = self.mLoader.retrieveDataset(songs_path, ignore_main_path=False)
-                self.saveShader(t_d, dirc)
-        #assume songs path related with shader, so if already load, no need to check again
-        else:
-            t_d = self.mLoader.retrieveDataset(songs_path, ignore_main_path=False)
-            if (dirc["saveAtInit"]=="True"):
-                self.saveShader(t_d, dirc)
+        
+        self.mstorage = MusicStorage(dirc['dir'], ['mfcc', 'song_dir', 'melspectogram', 'energy', 'key', 'tonnetz'])
+        self.preShader(dirc, songs_path)
 
         #save array containing possible output for each model
-        t_l_g = fileParser.parse_args_json(self.settings, {'genre_models': {"iterator":"id", "feature":'name'}})['genre_models']
+        # t_l_g = fileParser.parse_args_json(self.settings, {'genre_models': {"iterator":"id", "feature":'name'}})['genre_models']
         t_l_k = fileParser.parse_args_json(self.settings, {'key_models': {"iterator":"id", "feature":'name'}})['key_models']
+        t_l_e = fileParser.parse_args_json(self.settings, {'energy_models': {"iterator":"id", "feature":'name'}})['energy_models']
 
         #create postprocessor to postprocess output
-        t_g_1, t_k_1 = fileParser.single_parse_models_settings_json(self.settings,retrieved = 'thresh')
-        self.postProcessorG = PostProcessor.PostProcessor(t_l_g,float(t_g_1))
+        t_g_1, t_k_1, t_e_1 = fileParser.single_parse_models_settings_json(self.settings,retrieved = 'thresh')
+        self.postProcessorE = PostProcessor.PostProcessor(t_l_e,float(t_e_1))
         self.postProcessorK = PostProcessor.PostProcessor(t_l_k,float(t_k_1))
 
-        #inference
-        w_g = self.genreModel.predict(t_d['mfcc'])
-        w_k = self.keyModel.predict(t_d['mfcc'])
+        #inference per song loop
+        for idx_song in range(len(self.mstorage.getData()['song_dir'])):
+            try:
+                w_e = self.mstorage.getData()['energy'][idx_song]
+            except:
+                w_e = self.energyModel.predict(self.mstorage.getData()['melspectogram'][idx_song])
+                i_e, w_e = self.postProcessorE.process([self.mstorage.getData()['song_dir'][idx_song] for index in range(len(w_e))], w_e)
+                self.mstorage.addData({'energy': w_e})
 
-        #postprocess and replace previous inference data
-        i_g, w_g = self.postProcessorG.process(t_d['songs_dir'], w_g)
-        i_k, w_k = self.postProcessorK.process(t_d['songs_dir'], w_k)
+            try:
+                w_k = self.mstorage.getData()['key'][idx_song]
+            except:
+                w_k = self.keyModel.predict( np.dstack( (self.mstorage.getData()['melspectogram'][idx_song], self.mstorage.getData()['tonnetz'][idx_song]) ) )   
+                i_k, w_k = self.postProcessorK.process([self.mstorage.getData()['song_dir'][idx_song] for index in range(len(w_k))], w_k)
+                self.mstorage.addData({'key': w_k})
 
-        #prepare array for all class to be stored
-        arr1 = []
-        arr2 = []
-
-        for isi in t_l_g:
-            arr1.append([])
-        for isi in t_l_k:
-            arr2.append([])
-
-        #store to corresponding list
-        print(w_g)
-        print(i_g)
-        self.legals = [[isi for isi in list(set(w_g)) if isi != len(t_l_g)-1], [isi for isi in list(set(w_k)) if isi != len(t_l_k)-1] ] #legal path
-
-        self.ptr = [self.legals[0][randint(0, len(self.legals[0])-1)],0]
-        self.ptr2 = 0
+            # self.mstorage.addData({'energy': w_e, 'key': w_k})
         
-        for isi in enumerate(w_g):
-            print(isi)
-            arr1[isi[1]].append(i_g[isi[0]])
-        #store to corresponding list
-        for isi in enumerate(w_k):
-            arr2[isi[1]].append(i_k[isi[0]])
+        self.musicselection = MusicSelection()
 
-        #store song to database
-        CONST_MAP = ('Genre', 'Key')
-        self.Database = DatabaseLocal.DatabaseLocal(CONST_MAP,[arr1,arr2])
-        self.MUSTFLUSH = False
-        self.ovr = 0
-        # self.database_variable = core.DatabaseLocal.DatabaseLocal(self.CONST_MAP, )
-
-    def getNextMusic(self, crowd = 1, ignore_empty = False, care_key=False):
-        #HardCoding Mapping
-        #1 -> Up, 2-> Down, 3-> Key, 4->Not doing anything
-        if (len(self.Database.mainArr[self.ptr2][self.ptr[self.ptr2]])<1) or (self.MUSTFLUSH):
-            print("flushed")
-            self.MUSTFLUSH = False
-            self.ptr = [self.legals[0][randint(0, len(self.legals[0])-1)],0]
-            self.ptr2 = 0
-            self.Database.forceFlush()
-        # t = self.Database.mainArr[self.ptr2][self.ptr[self.ptr2]][0]
-        # self.Database.pop(t)
-        t = self.Database.popVal(indexes = self.ptr[self.ptr2], column = self.ptr2, locSong=self.ovr)
-        self.ovr = 0
-        if (crowd==1):
-            self.ptr2 = 0
-            if (ignore_empty):
-                self.ptr[self.ptr2] += 1
-                self.ptr[self.ptr2] %= (len(self.postProcessorG.label)-1)
-            else:
-                self.ptr[self.ptr2] = self.legals[self.ptr2][(self.legals[self.ptr2].index(self.ptr[self.ptr2]) + 1)%(len(self.legals[self.ptr2]))]
-        elif (crowd==2):
-            self.ptr2 = 0
-            temp = 0
-            if (ignore_empty):
-                self.ptr[self.ptr2] -= 1
-                temp = (len(self.postProcessorG.label)-2) 
-            else:
-                self.ptr[self.ptr2] = self.legals[self.ptr2].index(self.ptr[self.ptr2]) - 1
-                temp = len(self.legals[self.ptr2])-1
-            if (self.ptr[self.ptr2]<0):
-                self.ptr[self.ptr2] = temp
-        elif (crowd==3):
-            self.ptr2 = 1
-            possKey = self.__generate_key__( self.__retrieve_key__(t))
-            self.MUSTFLUSH = True
-            for isi in possKey:
-                if (len(self.Database.mainArr[self.ptr2][isi])>0):
-                    self.ptr[self.ptr2] = isi
-                    self.MUSTFLUSH = False
-                    break
-        if ( (care_key) and ( (crowd==1) or (crowd==2) ) ):
-            possKey = self.__generate_key__( self.__retrieve_key__(t))
-            self.MUSTFLUSH = True
-            song_list = self.Database.mainArr[self.ptr2][self.ptr[self.ptr2]]
-            for isi in enumerate(song_list):
-                pc = self.__retrieve_key__(isi[1])
-                if (pc in possKey):
-                    self.ptr2 = 1
-                    self.ptr[self.ptr2] = pc
-                    self.MUSTFLUSH = False
-                    self.ovr = isi[0]
-                    break
-        return self.Database.__translate_name__(t)
-
-    def __retrieve_key__(self, song):
-        arrKey = self.Database.getFreshList()[self.Database.CONST_MAP.index('Key')]
-        index_songs = -1
-        for index in range(len(arrKey)):
-            if (song in arrKey[index]):
-                index_songs = index
-                break
-        return index_songs
-
-    def __generate_key__(self, currKey):
-        pc = ((len(self.postProcessorK.label)-1)/2)
-        rel_pos = currKey % pc
-        t1 = rel_pos +1
-        t2 = rel_pos - 1
-        t3 = rel_pos
-        if (t2 < 0):
-            t2 += pc 
-        if (t1 >= pc):
-            t1 = 0
-        if (currKey >=  pc):
-            t1 += pc 
-            t2 += pc
-        else:
-            t3 += pc
-        
-        return (int(t1), int(t2), int(t3))
+    def getNextMusic(self, crowd=0):
+        return self.musicselection.getNext(self.mstorage)
 
     def addSong(self, nwsong):
         t_d = self.mLoader.retrieveDataset(nwsong, ignore_main_path=False)
-
-        #save array containing possible output for each model
-        t_l_g = fileParser.parse_args_json(self.settings, {'genre_models': {"iterator":"id", "feature":'name'}})['genre_models']
-        t_l_k = fileParser.parse_args_json(self.settings, {'key_models': {"iterator":"id", "feature":'name'}})['key_models']
-
-        #inference
-        w_g = self.genreModel.predict(t_d['mfcc'])
-        w_k = self.keyModel.predict(t_d['mfcc'])
-
-        #postprocess and replace previous inference data
-        i_g, w_g = self.postProcessorG.process(t_d['songs_dir'], w_g)
-        i_k, w_k = self.postProcessorK.process(t_d['songs_dir'], w_k)
-
-        #prepare array for all class to be stored
-        arr1 = []
-        arr2 = []
-
-        for isi in t_l_g:
-            arr1.append([])
-        for isi in t_l_k:
-            arr2.append([])
-
-        #store to corresponding list
-        print(w_g)
-        print(i_g)
-
-        #### Need to find ways to solve this!!
-        # self.legals = [[isi for isi in list(set(w_g)) if isi != len(t_l_g)-1], [isi for isi in list(set(w_k)) if isi != len(t_l_k)-1] ] #legal path
-        # self.ptr = [self.legals[0][randint(0, len(self.legals[0])-1)],0]
-        # self.ptr2 = 0
-        
-        for isi in enumerate(w_g):
-            print(isi)
-            arr1[isi[1]].append(i_g[isi[0]])
-        #store to corresponding list
-        for isi in enumerate(w_k):
-            arr2[isi[1]].append(i_k[isi[0]])
-
-        #store song to database
-        self.Database.pushVal([arr1, arr2])
-        try:
-            dirc = fileParser.parse_args_json(self.settings, {'precache_settings': {"iterator":None, "feature":["mode", "dir"]}})['precache_settings']
-            dirc = dirc[-1]
-            # self.saveShader(t_d, dirc)
-        except:
-            pass
+        self.mstorage.addData(t_d)
 
     def preShader(self, dirc, songs_path):
         # dirc = fileParser.parse_args_json(self.settings, {'preshader_settings': {"iterator":None, "feature":["mode", "dir"]}})['preshader_settings']
+        # if storage saving disable, load manually all data
         if (dirc["mode"]!="True"):
-            return False
-        data, unloaded = ExportCache.loadCache(dirc['dir'],songs_path)
-        for song in unloaded:
-            t_d = self.mLoader.retrieveDataset(song, ignore_main_path=False)
-            data['mfcc'].extend(t_d['mfcc'])
-            data['songs_dir'].extend(t_d['songs_dir'])
-        return data
+            t_d = self.mLoader.retrieveDataset(songs_path, ignore_main_path=False)
+            self.mstorage.saveEveryAdd = False
+            self.mstorage.addData(t_d)
+        # if storage saving enable, only load unloaded song
+        else:
+            unloaded = []
+            for i, (dirpath, dirnames, filenames) in enumerate(os.walk(songs_path)):
+                for f in filenames:
+                    file_path = os.path.join(dirpath,f)
+                    if (file_path in self.mstorage.getData()['song_dir']):
+                        pass
+                    else:
+                        unloaded.append(file_path)
+            for song in unloaded:
+                t_d = self.mLoader.retrieveDataset(song, ignore_main_path=False)
+                # print(t_d)
+                self.mstorage.addData(t_d)
 
-    def saveShader(self, nwdata, dirc):
-        # dirc = fileParser.parse_args_json(self.settings, {'preshader_settings': {"iterator":None, "feature":["mode", "dir"]}})['preshader_settings']
-        self.saveShaderManual(dirc['dir'], nwdata)
-        # if (True):
-        #     try:
-        #         with open(dirc["dir"], 'r') as fp:
-        #             data = json.load(fp)
-        #             data['mfcc'].extend(nwdata['mfcc'])
-        #             data['songs_dir'].extend(nwdata['songs_dir'])
-        #             data['mapping'].extend(nwdata['mapping'])
-        #     except:
-        #         data = nwdata
-
-        #     with open(dirc["dir"], 'w') as fp:
-        #         json.dump(data, fp, indent=4)
-            
-    def saveShaderManual(self, dirc, nwdata):
-        # dirc = fileParser.parse_args_json(self.settings, {'preshader_settings': {"iterator":None, "feature":["mode", "dir"]}})['preshader_settings']
-        if (True):
-            try:
-                with open(dirc, 'r') as fp:
-                    data = json.load(fp)
-                    data['mfcc'].extend(nwdata['mfcc'])
-                    data['songs_dir'].extend(nwdata['songs_dir'])
-                    data['mapping'].extend(nwdata['mapping'])
-            except:
-                data = nwdata
-
-            with open(dirc, 'w') as fp:
-                json.dump(data, fp, indent=4) 
-
-    def saveCache(self, dirc, nwdata):
-        self.saveShaderManual(dirc, nwdata)    
-           
-
-
-    # def getNextMusicAbsPath(self, currDir):
 
     
     

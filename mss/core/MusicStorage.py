@@ -1,3 +1,6 @@
+# import Storage
+from .Storage import Storage
+
 class MusicStorage(Storage):
     def __init__(self, location, columns, saveEveryAdd = True):
         super(MusicStorage, self).__init__(location, columns, saveEveryAdd)

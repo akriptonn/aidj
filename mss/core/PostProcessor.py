@@ -43,6 +43,8 @@ class PostProcessor:
             if (cls=='mode'):
                 index, dump = max(enumerate(t_arr[idx]), key=operator.itemgetter(1)) #get max value with it index
                 t_arr[idx] = index
+            else:
+                raise ValueError("ONLY cls=mode argument that available for now!")
         
         return t_arr_inp, t_arr
 

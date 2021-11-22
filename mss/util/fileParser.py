@@ -53,4 +53,4 @@ def parse_args_json(json_obj, extracted_features):
 
 def single_parse_models_settings_json(json_obj, retrieved='dir'): #(genre, key)
     t_dic = parse_args_json(json_obj, {'model_settings': {"iterator":None, "feature":['name', retrieved]}})
-    return (t_dic['model_settings'][t_dic['model_settings'].index([isi for isi in t_dic['model_settings'] if isi['name']=='genre'][-1])][retrieved], t_dic['model_settings'][t_dic['model_settings'].index([isi for isi in t_dic['model_settings'] if isi['name']=='key'][-1])][retrieved])
+    return (t_dic['model_settings'][t_dic['model_settings'].index([isi for isi in t_dic['model_settings'] if isi['name']=='genre'][-1])][retrieved], t_dic['model_settings'][t_dic['model_settings'].index([isi for isi in t_dic['model_settings'] if isi['name']=='key'][-1])][retrieved], t_dic['model_settings'][t_dic['model_settings'].index([isi for isi in t_dic['model_settings'] if isi['name']=='energy'][-1])][retrieved])

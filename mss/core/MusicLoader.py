@@ -1,6 +1,8 @@
 import os
 import librosa
 import math
+from sklearn.preprocessing import StandardScaler
+import numpy as np
 
 class MusicLoader:
     def __init__(self, duration=30,sr=22050, num_segments=10, n_mfcc=13, n_fft=4084, hop_length=1024):
@@ -42,18 +44,33 @@ class MusicLoader:
                                                         hop_length = self.hop_length)
 
                 mfcc = mfcc.T
+
                 melspec = librosa.feature.melspectrogram(signal[start_sample : finish_sample],
                                                     sr = self.sr,
                                                     n_fft = self.n_fft,
                                                     hop_length = self.hop_length)
-                melspec = melspec.T
+
+                melspec = librosa.power_to_db(melspec, ref=np.max) #log scaling
                 
+                scalers = StandardScaler()
+                melspec = scalers.fit_transform(melspec)
+
+                melspec = melspec.T
+
+                avgs = np.mean(melspec, dtype=np.float64)
+                melspec -= avgs
+                tonnetz = librosa.feature.tonnetz(signal[start_sample : finish_sample],
+                                                        sr = self.sr,
+                                                        hop_length = self.hop_length)
+                tonnetz = tonnetz.T
+
             except:
                 continue
                     # store mfcc for segment if it has the expected length
             if len(mfcc) == self.expected_num_mfcc_vectors_per_segment:
                     # print(mfcc.shape)
-                return_data.append([True, melspec.tolist(), mfcc.tolist()])
+
+                return_data.append([True, melspec.tolist(), mfcc.tolist(), tonnetz.tolist()])
                     # data['mfcc'].append(mfcc.tolist())
                     # data['songs_dir'].append(file_path)
         
@@ -66,7 +83,8 @@ class MusicLoader:
         data = {
                 'mfcc' : [],
                 'song_dir': [],
-                'melspectogram': []
+                'melspectogram': [],
+                'tonnetz': []
         }
             
         songs_path_list = []
@@ -86,14 +104,22 @@ class MusicLoader:
         for file_path in songs_path_list:
             target_segment = []
             target_segment2 = []
-            
+            target_segment3 = []
+
             for segment in self.extract_feature(file_path, format):
                 if (segment[0]):
                     target_segment.append(segment[1])
                     target_segment2.append(segment[2])
-
+                    target_segment3.append(segment[3])
+            if (len(target_segment)<=0):
+                continue
+            if (len(target_segment2)<=0):
+                continue
+            if (len(target_segment3)<=0):
+                continue    
             data['song_dir'].append(file_path)
             data['melspectogram'].append(target_segment)
             data['mfcc'].append(target_segment2)
+            data['tonnetz'].append(target_segment3)
             
         return data
