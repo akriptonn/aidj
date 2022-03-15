@@ -16,3 +16,5 @@ class MusicStorage(Storage):
         for isi in columnList:
             temp[isi] = self.getData()[isi][idx]
         return temp
+
+    
