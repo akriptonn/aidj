@@ -31,7 +31,8 @@ class MusicSelection:
                 for isi in energi:
                     candidateSongPool.extend([mstorage.getData()['song_dir'][i] for i, x in enumerate(mstorage.getData()['energy']) if (x == isi) and (currentSongidx != i)])
                 self.mSim = MusicSimilarity(candidateSongPool,self.currentSong, mstorage)
-            self.playedSong[self.currentEnergy].append(self.currentSong)
+            if (self.currentSong not in self.playedSong[self.currentEnergy]):
+                self.playedSong[self.currentEnergy].append(self.currentSong)
             return True
         except Exception as Er:
             print("error: ", end=' ')
@@ -218,6 +219,12 @@ class MusicSelection:
             statusLoop = True
             # phase 3: store songs with proper energy level, then filter based on the key condition. If none key exist, repeat until get desired
             candidateKey = self.__generate_key__(self.currentKey)
+            stayCandidateSongidx = [cddIdx for cddIdx in candidateSongidx if (mstorage.getData()['key'][cddIdx]==self.currentKey)]
+            # draw_lots = np.random.choice([False, True], 1,p=[0.2,0.8]) #80% same key
+            isStayCddIdxAv = len(stayCandidateSongidx)>0
+            if (isStayCddIdxAv and np.random.choice([False, True], 1,p=[0.2,0.8])): #80% same key
+                ncandidateSongidx = stayCandidateSongidx
+                statusLoop = False
             while ((patience >=0) and (statusLoop)):
                 ncandidateSongidx = [cddIdx for cddIdx in candidateSongidx if (mstorage.getData()['key'][cddIdx] in candidateKey)]
                 # candidateSongidx = [i for i, x in enumerate(mstorage.getData()['energy']) if ((x == self.currentEnergy) and (mstorage.getData()['key'][i] in candidateKey))]
@@ -230,8 +237,12 @@ class MusicSelection:
                         candidateKey.extend([isidalem for isi in candidateKeyNew for isidalem in isi])
                         candidateKey = set(candidateKey)
                     patience -= 1
-            if (statusLoop): #if key still not found, dont filter
-                ncandidateSongidx = candidateSongidx
+            if (statusLoop): #if key still not found
+                if (isStayCddIdxAv): #if same key still exist, do not change key
+                    ncandidateSongidx = stayCandidateSongidx
+                #don't filter as no choice
+                else:
+                    ncandidateSongidx = candidateSongidx
             # phase 5: check song similarity
             candidateSongPool = [mstorage.getData()['song_dir'][i] for i in ncandidateSongidx]
             currentSongidx = self.mSim.MusicSim(candidateSongPool, mstorage)
