@@ -5,5 +5,7 @@ __pycache__/
 tmp/
 sample/.ipynb_checkpoints/
 *.pyc
+*.mp3
+*.wav
 .ipynb_checkpoints/
 Untitled.ipynb
