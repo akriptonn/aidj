@@ -17,7 +17,7 @@ class MusicSelectionSystem:
     CONSTANT_STORED_FEATURE = ['song_dir', 'melspectogram', 'energy', 'key']
     # CONSTANT_ML_FEATURE = ['energy', 'key']
 
-    def __init__(self, config_file, songs_path=None, notloopPlaylist=True, removeMainPath= False): #config file should contain settings file for genre and key model
+    def __init__(self, config_file, songs_path=None, notloopPlaylist=True, removeMainPath= True): #config file should contain settings file for genre and key model
         self.skipMainPath = removeMainPath
         #Read JSON Settings
         if (config_file.split(".")[-1]=='json'): 
@@ -146,13 +146,25 @@ class MusicSelectionSystem:
         for i, (dirpath, dirnames, filenames) in enumerate(os.walk(songs_path)):
             for f in filenames:
                 file_path = os.path.join(dirpath,f)
-                if (file_path in self.mstorage.getData()['song_dir']):
-                    self.__store_songs_data__(self.mstorage.getFeature(MusicSelectionSystem.CONSTANT_STORED_FEATURE, file_path))
+                if (self.skipMainPath):
+                    ref_path = os.path.split(file_path)[-1]
+                else:
+                    ref_path = file_path
+                if (ref_path in self.mstorage.getData()['song_dir']):
+                    t_d = self.mstorage.getFeature(MusicSelectionSystem.CONSTANT_STORED_FEATURE, ref_path)
+                    t_d['song_dir'] = file_path
+                    self.__store_songs_data__(t_d)
                 else:
                     unloaded.append(file_path)
         if (os.path.isfile(songs_path)):
-            if (songs_path in self.mstorage.getData()['song_dir']):
-                self.__store_songs_data__(self.mstorage.getFeature(MusicSelectionSystem.CONSTANT_STORED_FEATURE, songs_path))
+            if (self.skipMainPath):
+                ref_path = os.path.split(songs_path)[-1]
+            else:
+                ref_path = songs_path
+            if (ref_path in self.mstorage.getData()['song_dir']):
+                t_d = self.mstorage.getFeature(MusicSelectionSystem.CONSTANT_STORED_FEATURE, ref_path)
+                t_d['song_dir'] = songs_path
+                self.__store_songs_data__(t_d)
             else:
                 unloaded.append(songs_path)
         for song in unloaded:
@@ -178,6 +190,8 @@ class MusicSelectionSystem:
             # self.__store_songs_data__(t_d)
 
     def __sanitize_storage__(self, data): #for loadtime storage
+        for kolom in MusicSelectionSystem.CONSTANT_STORED_FEATURE: #real storage do not need to remove main path
+            self.real_mstorage.addData({kolom: data[kolom]}) 
         if (self.skipMainPath):
             new_arr = []
             for isi in data['song_dir']:
@@ -185,14 +199,13 @@ class MusicSelectionSystem:
             data['song_dir'] = new_arr
         for kolom in MusicSelectionSystem.CONSTANT_STORED_FEATURE:
             self.mstorage.addData({kolom: data[kolom]}) 
-            self.real_mstorage.addData({kolom: data[kolom]}) 
 
     def __store_songs_data__(self, data): #for runtime storage
-        if (self.skipMainPath):
-            new_arr = []
-            for isi in data['song_dir']:
-                new_arr.append(os.path.split(isi)[-1])
-            data['song_dir'] = new_arr
+        # if (self.skipMainPath):
+        #     new_arr = []
+        #     for isi in data['song_dir']:
+        #         new_arr.append(os.path.split(isi)[-1])
+        #     data['song_dir'] = new_arr
         for kolom in MusicSelectionSystem.CONSTANT_STORED_FEATURE:
             if (kolom=='melspectogram'):
                 data[kolom] = [data[kolom]]
